@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.example.demo.security.ApplicationUserPermission.*;
 import static com.example.demo.security.ApplicationUserRole.*;
 
@@ -38,15 +40,21 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "/index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
-//                .antMatchers(HttpMethod.DELETE,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                .antMatchers(HttpMethod.POST,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                .antMatchers(HttpMethod.PUT,"/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
-//                .antMatchers(HttpMethod.GET,"/management/api/**").hasAnyRole(ADMINTRAINEE.name(),ADMIN.name())//role base authentication
                 .anyRequest()
                 .authenticated()
                 .and()
 //                .httpBasic(); //login with base authentication
-                .formLogin(); //form base auth
+                .formLogin()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/courses",true)
+                .and()
+                .rememberMe()// default 2 week
+                .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21))
+                .key("secretmd5")
+        ;
+
+
+                  //form base auth
     }
 
     @Override
@@ -73,8 +81,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .roles(ADMINTRAINEE.name())
                 .build();
 
-//        return new InMemoryUserDetailsManager(annaSmithUser,lindaUser,tomUser);
-        return new InMemoryUserDetailsManager(lindaUser,tomUser);
+        return new InMemoryUserDetailsManager(annaSmithUser,lindaUser,tomUser);
+//        return new InMemoryUserDetailsManager(lindaUser,tomUser);
     }
 
 
